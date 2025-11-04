@@ -1,0 +1,29 @@
+### Base URL local
+@base=http://localhost:8080
+
+### Listar
+GET {{base}}/api/tasks
+
+### Crear
+POST {{base}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Tarea via HTTP file",
+  "completed": false
+}
+
+### Actualizar (reemplazar {id})
+PUT {{base}}/api/tasks/{{id}}
+Content-Type: application/json
+
+{
+  "title": "Actualizada",
+  "completed": true
+}
+
+### Eliminar (reemplazar {id})
+DELETE {{base}}/api/tasks/{{id}}
+
+### Swagger UI
+GET {{base}}/docs
