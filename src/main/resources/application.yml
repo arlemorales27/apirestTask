@@ -2,10 +2,10 @@ spring:
   application:
     name: reactive-tasks
   r2dbc:
-    # Puedes usar URL directa o construirla con DB_HOST/DB_PORT/DB_NAME/DB_SSL_MODE
-    url: ${SPRING_R2DBC_URL:r2dbc:pool:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:appdb}?sslMode=${DB_SSL_MODE:disable}}
-    username: ${SPRING_R2DBC_USERNAME:${DB_USER:app}}
-    password: ${SPRING_R2DBC_PASSWORD:${DB_PASSWORD:secret}}
+    # Render puede exponer DB_* o DATABASE_* según la integración configurada
+    url: ${SPRING_R2DBC_URL:r2dbc:pool:postgresql://${DB_HOST:${DATABASE_HOST:${PGHOST:localhost}}}:${DB_PORT:${DATABASE_PORT:${PGPORT:5432}}}/${DB_NAME:${DATABASE_NAME:${PGDATABASE:appdb}}}?sslMode=${DB_SSL_MODE:${DATABASE_SSL_MODE:disable}}}
+    username: ${SPRING_R2DBC_USERNAME:${DB_USER:${DATABASE_USER:${PGUSER:app}}}}
+    password: ${SPRING_R2DBC_PASSWORD:${DB_PASSWORD:${DATABASE_PASSWORD:${PGPASSWORD:secret}}}}
 
   sql:
     init:

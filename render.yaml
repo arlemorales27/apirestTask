@@ -14,6 +14,8 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+      - key: SPRING_SQL_INIT_MODE
+        value: never
       - key: DB_HOST
         fromDatabase:
           name: reactive-tasks-db
@@ -31,6 +33,14 @@ services:
           name: reactive-tasks-db
           property: user
       - key: SPRING_R2DBC_PASSWORD
+        fromDatabase:
+          name: reactive-tasks-db
+          property: password
+      - key: DB_USER
+        fromDatabase:
+          name: reactive-tasks-db
+          property: user
+      - key: DB_PASSWORD
         fromDatabase:
           name: reactive-tasks-db
           property: password
