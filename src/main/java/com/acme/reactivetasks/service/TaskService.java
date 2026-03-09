@@ -22,12 +22,14 @@ public class TaskService {
 
     public Flux<Task> list(long limit, long offset) {
         if (limit <= 0) limit = 50;
+        if (limit > 1000) limit = 1000;
         if (offset < 0) offset = 0;
         return repository.findAllPaged(limit, offset);
     }
 
     public Mono<Task> get(UUID id) {
-        return repository.findById(id);
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new NotFoundException("Task %s no existe".formatted(id))));
     }
 
     @Transactional
@@ -52,7 +54,10 @@ public class TaskService {
 
     @Transactional
     public Mono<Void> delete(UUID id) {
-        return repository.deleteById(id);
+        return repository.existsById(id)
+                .flatMap(exists -> exists
+                        ? repository.deleteById(id)
+                        : Mono.error(new NotFoundException("Task %s no existe".formatted(id))));
     }
 
     public static class NotFoundException extends RuntimeException {

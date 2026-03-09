@@ -6,11 +6,13 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalErrorHandler {
@@ -34,6 +36,20 @@ public class GlobalErrorHandler {
                         "status", HttpStatus.BAD_REQUEST.value(),
                         "error", "Bad Request",
                         "message", ex.getMessage()
+                )));
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleBodyValidation(WebExchangeBindException ex) {
+        String message = ex.getFieldErrors().stream()
+                .map(err -> "%s: %s".formatted(err.getField(), err.getDefaultMessage()))
+                .collect(Collectors.joining(", "));
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                        "status", HttpStatus.BAD_REQUEST.value(),
+                        "error", "Bad Request",
+                        "message", message.isBlank() ? "Request body invalido" : message
                 )));
     }
 

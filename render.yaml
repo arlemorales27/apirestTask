@@ -1,0 +1,38 @@
+databases:
+  - name: reactive-tasks-db
+    databaseName: appdb
+    user: app
+    plan: free
+
+services:
+  - type: web
+    name: reactive-tasks-api
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: reactive-tasks-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: reactive-tasks-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: reactive-tasks-db
+          property: database
+      - key: SPRING_R2DBC_USERNAME
+        fromDatabase:
+          name: reactive-tasks-db
+          property: user
+      - key: SPRING_R2DBC_PASSWORD
+        fromDatabase:
+          name: reactive-tasks-db
+          property: password
+      - key: DB_SSL_MODE
+        value: require

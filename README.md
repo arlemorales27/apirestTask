@@ -41,30 +41,19 @@ curl -s http://localhost:8080/api/tasks | jq
 
 ---
 
-## Despliegue en Render (Docker + Postgres gestionado)
+## Despliegue en Render (Blueprint + auto deploy)
 
-> Render funciona muy bien con Dockerfile. Usaremos una Base de Datos PostgreSQL gestionada y un Web Service Docker.
+Este repositorio incluye el archivo [`render.yaml`](render.yaml), que define:
+- 1 PostgreSQL gestionado (`reactive-tasks-db`)
+- 1 Web Service Docker (`reactive-tasks-api`)
+- Variables de entorno y health check (`/actuator/health`)
 
-1. **Crea la BD en Render**  
-   - *New → PostgreSQL* (elige región cercana, plan Free para pruebas).  
-   - Ve a la BD y copia el `Internal Database URL` (formato `postgres://usuario:pass@host:port/db`).  
-   - Para R2DBC necesitaremos la URL con prefijo `r2dbc:pool:postgresql://` y con **SSL obligatorio**:
-     - Convierte: `postgres://usuario:pass@host:port/db` →  
-       `r2dbc:pool:postgresql://usuario:pass@host:port/db?sslMode=require`
+1. **Sube el proyecto a GitHub** con `main` actualizado.
+2. **En Render**: `New +` → `Blueprint` → selecciona este repositorio.
+3. **Confirma el plan/region** y crea los recursos.
+4. Desde ese momento, cada `git push` a `main` dispara un nuevo despliegue automáticamente (`autoDeploy: true`).
 
-2. **Crea el servicio web en Render**  
-   - *New → Web Service → Connect repository* y selecciona tu repo.  
-   - Render detectará el Dockerfile (runtime: Docker).  
-   - **Variables de entorno** (Environment → Add):
-     - `SPRING_PROFILES_ACTIVE=prod`
-     - `SPRING_R2DBC_URL=r2dbc:pool:postgresql://USUARIO:PASS@HOST:PUERTO/DB?sslMode=require`
-       - (Puedes pegar el *Internal Database URL* y solo anteponer `r2dbc:pool:` y añadir `?sslMode=require`).  
-     - (Opcional si tu URL no incluye credenciales)  
-       - `SPRING_R2DBC_USERNAME=<usuario>`  
-       - `SPRING_R2DBC_PASSWORD=<pass>`
-   - Pulsa **Deploy**. Render construirá la imagen Docker y arrancará el contenedor.
-
-3. **Probar desde la nube (Render)**  
+### Probar desde la nube (Render)
    - Cuando el servicio esté *Live*, verás la URL pública, p. ej. `https://tu-servicio.onrender.com`.  
    - Comprueba salud y docs:
      - `GET https://tu-servicio.onrender.com/actuator/health`
@@ -81,6 +70,9 @@ Puedes configurar estas env vars en cualquier plataforma (Render, Docker, etc.):
 - `SPRING_R2DBC_USERNAME`: `app`
 - `SPRING_R2DBC_PASSWORD`: `secret`
 - `SPRING_PROFILES_ACTIVE`: `dev` en local, `prod` en producción.
+- Alternativa sin URL completa:
+  - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_SSL_MODE` (`require` en Render)
+  - `DB_USER`, `DB_PASSWORD` (o `SPRING_R2DBC_USERNAME`/`SPRING_R2DBC_PASSWORD`)
 
 En `prod` desactivamos la inicialización de datos (ver `application-prod.yml`).
 
